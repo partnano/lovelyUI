@@ -1,5 +1,9 @@
 local lg = love.graphics
 
+-- DEBUG AREA - function decl
+local print_table
+
+-- base settings
 local lovelyui = {
     perc_coords   = true,
     utf8_supp     = true,
@@ -10,6 +14,8 @@ local lovelyui = {
     smooth_speed  = 30,
     fin_indicator = true
 }
+
+lovelyui.draw_stack = {}
 
 function lovelyui:set_defaults (conf)
 
@@ -27,8 +33,29 @@ function lovelyui:set_defaults (conf)
     
 end
 
--- DEBUG AREA
-function print_table (t)
+function lovelyui:new_textbox (text, x, y, w, h, img)
+
+    -- no img support yet
+ 
+end
+
+function lovelyui:new_selectionbox (lines, x, y, w, h)
+
+end
+
+function lovelyui:new_layout (x, y, w, h)
+
+end
+
+function lovelyui:draw ()
+    
+    -- iterate over draw_stack
+    -- check for type ('draw' or 'print') and react accordingly
+    
+end
+
+-- DEBUG AREA - functions
+print_table = function (t)
     for k, v in pairs (t) do
 	print (k, v)
     end
