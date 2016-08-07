@@ -108,6 +108,27 @@ function lui:new_selectionbox (lines, x, y, w, h)
 
 end
 
+function lui:new_ynbox (text, x, y, w, h)
+
+    local yn = new_box (x, y, w, h)
+
+    yn._type = 'yn'
+    yn.text  = text
+    yn.yes_text = 'Yes'
+    yn.no_text = 'No'
+
+    -- functions meant to be overridden by the user
+    -- meant to kept simple
+    function yn:yes () print ('User chose yes!') end
+    function yn:no  () print ('User chose no!')  end
+
+    function yn:set_yes_text (text) s.yes_text = text end
+    function yn:set_no_text (text) s.no_text = text end
+    
+    table.insert (lui.draw_stack, yn)
+    return yn
+end
+
 -- TODO: all the functionality
 function lui:new_layout (x, y, w, h)
 
@@ -147,6 +168,12 @@ function lui:draw ()
 		    lg.printf (line, x +30, y +10 +(k-1)*20, w, 'left')
 
 		end
+	    elseif e._type == 'yn' then
+
+		lg.printf (e.text, x +10, y +10, w, 'left')
+		lg.printf (e.yes_text, x+30, y +50, w/4, 'left')
+		lg.printf (e.no_text, x+w -50, y +50, w/4, 'left')
+		
 	    end
 
 	end
