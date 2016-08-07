@@ -3,6 +3,7 @@ local u8 = require 'utf8'
 local lg = love.graphics
 
 -- local function decl
+local new_box
 local print_table
 local perc_to_abs
 
@@ -21,6 +22,7 @@ local lui = {
 
 lui.draw_stack = {}
 
+-- set defaults, everything is purely optional
 function lui:set_defaults (conf)
     
     if conf.width         ~= nil then lui.width         = conf.width         end
@@ -35,107 +37,170 @@ function lui:set_defaults (conf)
     
 end
 
+-- create and return a new textbox
+-- gets added to the draw_stack
 function lui:new_textbox (lines, x, y, w, h, img)
 
-    local t = {}
+    -- starting point: a base box
+    local t = new_box (x, y, w, h)
 
-    t._type = "text"
-    
-    if lui.perc_coords then
-	t.x, t.y = perc_to_abs (x, y)
-	t.w, t.h = perc_to_abs (w, h)
-    else
-	t.x, t.y = x, y
-	t.w, t.h = w, h
-    end
+    t._type     = "text"       -- what this is, important for draw_stack
+    t.lines     = lines        -- all the text that can be displayed
+    t.curr_line = lines[t._i]  -- the currently shown line
+    t.img       = img or nil   -- TODO: the displayed image
 
-    t.lines     = lines
-    t._i        = 1
-    t.curr_line = lines[t._i]
-    t.img       = img or nil
-    t._visible   = true
-    
-    function t:next_line ()
+    -- show the next line in the lines array, if available
+    function t:next ()
 	if t.lines[t._i +1] ~= nil then
 	    t._i = t._i +1
 	    t.curr_line = lines[t._i]
 	end
     end
 
-    function t:prev_line ()
+    -- show the previous line in the lines array, if available
+    function t:prev ()
 	if t.lines[t._i -1] ~= nil then
 	    t._i = t._i -1
 	    t.curr_line = lines[t._i]
 	end
     end
-    
+
+    -- is this is the first object, set it active
+    if lui._act == nil then lui:set_active (t) end
+
+    -- insert into draw stack and return it for the user
     table.insert (lui.draw_stack, t)
     return t
  
 end
 
+-- create and return a new selectionbox
+-- gets added to the draw stack
 function lui:new_selectionbox (lines, x, y, w, h)
 
-    local s = {}
+    -- be a base box
+    local s = new_box (x, y, w, h)
 
-    s._type = 'selection'
-    
-    if lui.perc_coords then
-	s.x, s.y = perc_to_abs (x, y)
-	s.w, s.h = perc_to_abs (w, h)
-    else
-	s.x, s.y = x, y
-	s.w, s.h = w, h
-    end
+    s._type = 'selection' -- what this is, important for draw_stack
+    s.lines   = lines     -- text displayed
 
-    s.lines   = lines
-    s._i      = 1
-    s._visible = true
-    
+    -- text, which is currently indicated at
     function s:curr_hover ()
 	return s.lines[s._i], s._i
     end
 
+    -- move indicator up by one
     function s:up ()
 	if s._i > 1 then s._i = s._i -1 end
     end
 
+    -- move indicator down by one
     function s:down ()
 	if s._i < #s.lines then s._i = s._i +1 end
     end
 
+    -- first object to be created? set active
+    if lui._act == nil then lui:set_active (s) end
+
+    -- add to draw stack and return for the user
     table.insert (lui.draw_stack, s)
     return s
 
 end
 
+-- TODO: all the functionality
 function lui:new_layout (x, y, w, h)
 
 end
 
+-- active-mechanism handling .. rather simple really
+function lui:set_active (box) lui._act = box end
+function lui:get_active () return lui._act end
+function lui:up   () lui._act:up   () end
+function lui:down () lui._act:down () end
+function lui:next () lui._act:next () end
+function lui:prev () lui._act:prev () end
+
+-- this handles all the UI drawing
 function lui:draw ()   
-    -- iterate over draw_stack
-    for i, e in pairs (lui.draw_stack) do
+
+    -- iterate over draw_stackremove any  from here, this should be drawing ONLY
+    for i, e in ipairs (lui.draw_stack) do
 	if e._visible then
-
+	    -- this is not ready for anything other than the 'box' suptype
+	    
+	    local x, y = e.get_pos ()
+	    local w, h = e.get_size ()
+	    
 	    lg.setColor (lui.border_color)
-	    lg.rectangle ('line', e.x, e.y, e.w, e.h)
+	    lg.rectangle ('line', x, y, w, h)
 
-	    if e._type == 'text' then
-		lg.printf (e.curr_line, e.x +10, e.y +10, e.w, 'left')
+	    -- for a textbox just print the current text
+	    if e._type == 'text' then lg.printf (e.curr_line, x +10, y +10, w, 'left')
 	    elseif e._type == 'selection' then
+		-- for a selectionbox print all the text
+		-- but handle the hover line differently
+		-- TODO: this should be less magic-numbery
 		for k, line in ipairs (e.lines) do
-		    local tmp = "   "
-		    if k == e._i then tmp = ">  " end
-		    lg.printf (tmp..line, e.x +10, e.y +10 +(k-1)*20, e.w, 'left')
+		    
+		    if k == e._i then lg.printf (">", x +10, y +10 +(k-1)*20, w, 'left') end
+		    lg.printf (line, x +30, y +10 +(k-1)*20, w, 'left')
+
 		end
 	    end
 
 	end
     end
+    
 end
 
--- local functions
+-- LOCAL FUNCTIONS
+
+-- base box, parent object for the other boxes
+new_box = function (x, y, w, h)
+
+    local b = {}
+
+    b._suptype = 'box'
+
+    -- if settings say percentage, position and size need to be recalculated
+    if lui.perc_coords then
+	b._x, b._y = perc_to_abs (x, y)
+	b._w, b._h = perc_to_abs (w, h)
+    else
+	b._x, b._y = x, y
+	b._w, b._h = w, h
+    end
+
+    b._i = 1          -- which line is currently relevant
+    b._visible = true -- if object is drawn
+
+    -- get, set, hide, show and prep work for subobjects (so love / lua won't crash)
+    function b:get_pos () return b._x, b._y end
+    function b:get_size () return b._w, b._h end
+    function b:set_pos (x, y)
+	if lui.perc_coords then b._x, b._y = perc_to_abs (x, y)
+	else b._x, b._y = x, y
+	end
+    end
+    function b:set_size (w, h)
+	if lui.perc_coords then b._w, b._h = perc_to_abs (w, h)
+	else b._w, b._h = w, h
+	end
+    end
+    function b:hide () b._visible = false end
+    function b:show () b._visible = true  end
+    function b:up   () end
+    function b:down () end
+    function b:next () end
+    function b:prev () end
+
+    -- done
+    return b
+    
+end
+
+-- calc for percentage to actual pixelcoords
 perc_to_abs = function (x, y)
     -- small integritycheck
     if lui.width  == nil then lui.width  = lg.getWidth  () end
@@ -143,7 +208,7 @@ perc_to_abs = function (x, y)
     return (lui.width /100) *x, (lui.height /100) *y
 end
 
-
+-- simple debug print
 print_table = function (t)
     for k, v in pairs (t) do
 	print (k, v)
@@ -151,5 +216,5 @@ print_table = function (t)
     print ("===========\n")
 end
 
-
+-- return lib contents
 return lui
