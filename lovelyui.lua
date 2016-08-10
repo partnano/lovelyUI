@@ -7,6 +7,9 @@ local new_box
 local print_table
 local perc_to_abs
 
+-- local vars
+local id_count = 0
+
 -- base settings
 local lui = {
     width, height = nil, nil,
@@ -123,15 +126,43 @@ function lui:new_ynbox (text, x, y, w, h)
     function yn:no  () print ('User chose no!')  end
 
     function yn:set_yes_text (text) s.yes_text = text end
-    function yn:set_no_text (text) s.no_text = text end
+    function yn:set_no_text  (text) s.no_text  = text end
     
     table.insert (lui.draw_stack, yn)
     return yn
 end
 
--- TODO: all the functionality
 function lui:new_layout (x, y, w, h)
 
+    local l = new_box (x, y, w, h)
+
+    l._type = 'layout'
+    l.elements = {}
+    
+    function l:add_element (e)
+	if e._suptype ~= 'box' then
+	    print ("Trying to add non lovelyUI element!")
+	else
+	    table.insert (l.elements, e)
+	    e._layout = l
+	end
+    end
+
+    function l:remove_element (e)
+	if e._suptype ~= 'box' then
+	    print ("Trying to remove a non lovelyUI element!")
+	else
+	    for k, v in pairs (l.elements) do
+		if v._id == e._id then
+		    table.remove (l.elements, k)
+		    e._layout = nil
+		end
+	    end
+	end
+    end
+
+    return l
+    
 end
 
 -- active-mechanism handling .. rather simple really
@@ -152,31 +183,49 @@ function lui:draw ()
 	    
 	    local x, y = e.get_pos ()
 	    local w, h = e.get_size ()
+
+	    if e._layout ~= nil then
+		local l = e._layout
+
+		-- if origin point is outside of layout, don't draw
+		if x > l._w or y > l._h then
+		    goto continue
+		end
+
+		x, y = x +l._x, y +l._y
+		
+	    end
 	    
 	    lg.setColor (lui.border_color)
 	    lg.rectangle ('line', x, y, w, h)
 
 	    -- for a textbox just print the current text
-	    if e._type == 'text' then lg.printf (e.curr_line, x +10, y +10, w, 'left')
+	    -- TODO: this should be less magic-numbery (ELEMENT PADDING OPTION)
+	    if e._type == 'text' then lg.printf (e.curr_line, x +10, y +10, w -20, 'left')
 	    elseif e._type == 'selection' then
 		-- for a selectionbox print all the text
 		-- but handle the hover line differently
-		-- TODO: this should be less magic-numbery
+		-- TODO: think about changing this, so font-lineheight is used
 		for k, line in ipairs (e.lines) do
+
+		    local breaks = ""
+		    for j = 1, k-1 do breaks = breaks.."\n" end
 		    
-		    if k == e._i then lg.printf (">", x +10, y +10 +(k-1)*20, w, 'left') end
-		    lg.printf (line, x +30, y +10 +(k-1)*20, w, 'left')
+		    if k == e._i then lg.printf (breaks..">", x +10, y +20, w -20, 'left') end
+		    lg.printf (breaks..line, x +30, y +20, w -60, 'left')
 
 		end
 	    elseif e._type == 'yn' then
 
-		lg.printf (e.text, x +10, y +10, w, 'left')
+		lg.printf (e.text, x +10, y +10, w -20, 'left')
 		lg.printf (e.yes_text, x+30, y +50, w/4, 'left')
 		lg.printf (e.no_text, x+w -50, y +50, w/4, 'left')
 		
 	    end
 
 	end
+
+	::continue::
     end
     
 end
@@ -221,7 +270,12 @@ new_box = function (x, y, w, h)
     function b:down () end
     function b:next () end
     function b:prev () end
+    function b:yes  () end
+    function b:no   () end
 
+    b._id = id_count
+    id_count = id_count +1
+    
     -- done
     return b
     
