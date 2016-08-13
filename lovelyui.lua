@@ -19,6 +19,7 @@ local lui = {
     border_color  = {255, 255, 255},
     text_color    = {255, 255, 255},
     text_smooth   = true,
+    text_padding  = 10,
     smooth_speed  = 30,
     fin_indicator = true
 }
@@ -181,8 +182,9 @@ function lui:draw ()
 	if e._visible then
 	    -- this is not ready for anything other than the 'box' suptype
 	    
-	    local x, y = e.get_pos ()
+	    local x, y = e.get_pos  ()
 	    local w, h = e.get_size ()
+	    local p = e.get_padding ()
 
 	    if e._layout ~= nil then
 		local l = e._layout
@@ -200,26 +202,29 @@ function lui:draw ()
 	    lg.rectangle ('line', x, y, w, h)
 
 	    -- for a textbox just print the current text
-	    -- TODO: this should be less magic-numbery (ELEMENT PADDING OPTION)
-	    if e._type == 'text' then lg.printf (e.curr_line, x +10, y +10, w -20, 'left')
+	    if e._type == 'text' then lg.printf (e.curr_line, x +p, y +p, w -2*p, 'left')
 	    elseif e._type == 'selection' then
 		-- for a selectionbox print all the text
 		-- but handle the hover line differently
-		-- TODO: think about changing this, so font-lineheight is used
 		for k, line in ipairs (e.lines) do
 
 		    local breaks = ""
 		    for j = 1, k-1 do breaks = breaks.."\n" end
 		    
-		    if k == e._i then lg.printf (breaks..">", x +10, y +20, w -20, 'left') end
-		    lg.printf (breaks..line, x +30, y +20, w -60, 'left')
+		    if k == e._i then lg.printf (breaks..">", x +p, y +2*p, w -2*p, 'left') end
+		    lg.printf (breaks..line, x +p +20, y +2*p, w -2*p+40, 'left')
 
 		end
 	    elseif e._type == 'yn' then
 
-		lg.printf (e.text, x +10, y +10, w -20, 'left')
-		lg.printf (e.yes_text, x+30, y +50, w/4, 'left')
-		lg.printf (e.no_text, x+w -50, y +50, w/4, 'left')
+		f = lg.getFont ()
+		fw = f:getWidth (e.no_text)
+		fh = f:getHeight ()
+
+		-- perfect. /s
+		lg.printf (e.text, x+p, y+p, w-2*p, 'center')
+		lg.printf (e.yes_text, x+3*p, y+h-2*p-fh, w/4, 'left')
+		lg.printf (e.no_text, x+w-3*p-fw, y+h-2*p-fh, w/4, 'left')
 		
 	    end
 
@@ -248,12 +253,14 @@ new_box = function (x, y, w, h)
 	b._w, b._h = w, h
     end
 
-    b._i = 1          -- which line is currently relevant
-    b._visible = true -- if object is drawn
+    b._i = 1                  -- which line is currently relevant
+    b._visible = true         -- if object is drawn
+    b._pad = lui.text_padding -- text distance from border
 
     -- get, set, hide, show and prep work for subobjects (so love / lua won't crash)
     function b:get_pos () return b._x, b._y end
     function b:get_size () return b._w, b._h end
+    function b:get_padding () return b._pad end
     function b:set_pos (x, y)
 	if lui.perc_coords then b._x, b._y = perc_to_abs (x, y)
 	else b._x, b._y = x, y
@@ -264,6 +271,7 @@ new_box = function (x, y, w, h)
 	else b._w, b._h = w, h
 	end
     end
+    function b:set_padding (p) b._pad = p end
     function b:hide () b._visible = false end
     function b:show () b._visible = true  end
     function b:up   () end
