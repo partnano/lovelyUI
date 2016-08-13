@@ -25,6 +25,7 @@ local lui = {
 }
 
 lui.draw_stack = {}
+lui.anim_stack = {}
 
 -- set defaults, everything is purely optional
 function lui:set_defaults (conf)
@@ -52,13 +53,17 @@ function lui:new_textbox (lines, x, y, w, h, img)
     t.lines     = lines        -- all the text that can be displayed
     t.curr_line = lines[t._i]  -- the currently shown line
     t.img       = img or nil   -- TODO: the displayed image
-
+    t._l        = ""           -- for text animation
+    t._lt       = 0            -- for text animation
+    t._lc       = 1            -- for text animation
+    
     -- show the next line in the lines array, if available
     function t:next ()
 	if t.lines[t._i +1] ~= nil then
 	    t._i = t._i +1
 	    t.curr_line = lines[t._i]
 	end
+	t:reset_anim ()
     end
 
     -- show the previous line in the lines array, if available
@@ -67,11 +72,25 @@ function lui:new_textbox (lines, x, y, w, h, img)
 	    t._i = t._i -1
 	    t.curr_line = lines[t._i]
 	end
+	t:reset_anim ()
+    end
+
+    function t:reset_anim ()
+	-- remove from anim_stack, so no double effects happen
+	for k, v in ipairs (lui.anim_stack) do
+	    if t._id == v._id then table.remove (lui.anim_stack, k) end
+	end
+	
+	t._l = ""
+	t._lt = 0
+	t._lc = 1
+	table.insert (lui.anim_stack, t)
     end
 
     -- is this is the first object, set it active
     if lui._act == nil then lui:set_active (t) end
 
+    table.insert (lui.anim_stack, t)
     -- insert into draw stack and return it for the user
     table.insert (lui.draw_stack, t)
     return t
@@ -174,6 +193,36 @@ function lui:down () lui._act:down () end
 function lui:next () lui._act:next () end
 function lui:prev () lui._act:prev () end
 
+-- this handles timed data structures
+function lui:update (dt)
+    
+    for i, e in ipairs (lui.anim_stack) do
+	if e._visible then
+
+	    e._lt = e._lt +dt
+	    if e._lt >= lui.smooth_speed /1000 then
+
+		local o = u8.offset (e.curr_line, e._lc)
+
+		if e._lc < #e.curr_line then
+		    local o2 = u8.offset (e.curr_line, e._lc+1)
+		    e._l = e._l .. e.curr_line:sub (o, o2 -1)
+		else
+		    e._l = e._l .. e.curr_line:sub (o)
+		end
+
+		e._lc, e._lt = e._lc +1, 0
+
+		if e._lc > u8.len (e.curr_line) then
+		    table.remove (lui.anim_stack, i)
+		end
+	    end
+	    
+	end
+    end
+    
+end
+
 -- this handles all the UI drawing
 function lui:draw ()   
 
@@ -202,7 +251,7 @@ function lui:draw ()
 	    lg.rectangle ('line', x, y, w, h)
 
 	    -- for a textbox just print the current text
-	    if e._type == 'text' then lg.printf (e.curr_line, x +p, y +p, w -2*p, 'left')
+	    if e._type == 'text' then lg.printf (e._l, x +p, y +p, w -2*p, 'left')
 	    elseif e._type == 'selection' then
 		-- for a selectionbox print all the text
 		-- but handle the hover line differently
