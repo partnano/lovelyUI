@@ -251,7 +251,15 @@ function lui:draw ()
 	    lg.rectangle ('line', x, y, w, h)
 
 	    -- for a textbox just print the current text
-	    if e._type == 'text' then lg.printf (e._l, x +p, y +p, w -2*p, 'left')
+	    if e._type == 'text' then
+		if e.img ~= nil then
+		    local iw = e.img:getWidth ()
+		    lg.draw (e.img, x +p, y +p)
+		    lg.printf (e._l, x +2*p +iw, y +p, w -2*p -iw, 'left')
+		else		    
+		    lg.printf (e._l, x +p, y +p, w -2*p, 'left')
+		end
+
 	    elseif e._type == 'selection' then
 		-- for a selectionbox print all the text
 		-- but handle the hover line differently
