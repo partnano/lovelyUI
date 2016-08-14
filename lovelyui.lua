@@ -20,7 +20,7 @@ local lui = {
     text_color    = {255, 255, 255},
     text_smooth   = true,
     text_padding  = 10,
-    smooth_speed  = 30,
+    smooth_speed  = 15,
     fin_indicator = true
 }
 
@@ -200,8 +200,8 @@ function lui:update (dt)
 	if e._visible then
 
 	    e._lt = e._lt +dt
-	    if e._lt >= lui.smooth_speed /1000 then
-
+	    while e._lt > lui.smooth_speed /1000 do
+		
 		local o = u8.offset (e.curr_line, e._lc)
 
 		if e._lc < #e.curr_line then
@@ -211,10 +211,12 @@ function lui:update (dt)
 		    e._l = e._l .. e.curr_line:sub (o)
 		end
 
-		e._lc, e._lt = e._lc +1, 0
+		e._lc = e._lc +1
+		e._lt = e._lt - lui.smooth_speed /1000
 
 		if e._lc > u8.len (e.curr_line) then
 		    table.remove (lui.anim_stack, i)
+		    break
 		end
 	    end
 	    
@@ -255,7 +257,7 @@ function lui:draw ()
 		if e.img ~= nil then
 		    local iw = e.img:getWidth ()
 		    lg.draw (e.img, x +p, y +p)
-		    lg.printf (e._l, x +2*p +iw, y +p, w -2*p -iw, 'left')
+		    lg.printf (e._l, x +2*p +iw, y +p, w -3*p -iw, 'left')
 		else		    
 		    lg.printf (e._l, x +p, y +p, w -2*p, 'left')
 		end
