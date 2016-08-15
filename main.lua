@@ -9,13 +9,20 @@ function love.load ()
     --lovelyui:set_defaults ({perc_coords = false, border = 'circle', smooth_speed = 9000})
 
     img = lg.newImage ("avatar.png")
+    fon = lg.newFont ("Aileron-Regular.otf", 20)
     
     s1 = lovelyui:new_selectionbox ({"Option 1", "Option 2", "Option 3"}, 30, 10, 10, 20)
     t1 = lovelyui:new_textbox ({"Hello this is µµ þþþ a rather long text to see the current default line height. Hello this is µµ þþþ a rather long text to see the current default line height. Hello this is µµ þþþ a rather long text to see the current default line height. Hello this is µµ þþþ a rather long text to see the current default line height. ", "Worldstar"}, 5, 10, 30, 30, img)
     y1 = lovelyui:new_ynbox ("Will you accept this box?", 40, 40, 12, 10)
+
     layout = lovelyui:new_layout (10, 0, 30, 10)
     layout:add_element (s1)
-    t1:set_padding (20)
+
+    t1.padding = 20
+    t1.font = fon
+    t1.border_color = {0, 0, 255}
+    t1.text_color = {255, 0, 0}
+    y1.yn_font = fon
 
     t2 = lovelyui:new_textbox ({"This is a second textbox, just to test this stuff."}, 60, 60, 20, 15)
 

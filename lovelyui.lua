@@ -12,16 +12,17 @@ local id_count = 0
 
 -- base settings
 local lui = {
-    width, height = nil, nil,
-    perc_coords   = true,
-    utf8_supp     = true,
-    border        = 'rectangle',
-    border_color  = {255, 255, 255},
-    text_color    = {255, 255, 255},
-    text_smooth   = true,
-    text_padding  = 10,
-    smooth_speed  = 15,
-    fin_indicator = true
+    width, height    = nil, nil,
+    perc_coords      = true,
+    utf8_supp        = true,
+    border           = 'rectangle',
+    border_color     = {255, 255, 255},
+    text_color       = {255, 255, 255},
+    background_color = {50, 50, 50},
+    text_anim        = true,
+    text_padding     = 10,
+    smooth_speed     = 10,
+    fin_indicator    = true
 }
 
 lui.draw_stack = {}
@@ -90,8 +91,8 @@ function lui:new_textbox (lines, x, y, w, h, img)
     -- is this is the first object, set it active
     if lui._act == nil then lui:set_active (t) end
 
+    -- insert into draw stack, anim_stack and return it for the user
     table.insert (lui.anim_stack, t)
-    -- insert into draw stack and return it for the user
     table.insert (lui.draw_stack, t)
     return t
  
@@ -139,9 +140,10 @@ function lui:new_ynbox (text, x, y, w, h)
     yn.text  = text
     yn.yes_text = 'Yes'
     yn.no_text = 'No'
+    yn.yn_font = yn.font
 
     -- functions meant to be overridden by the user
-    -- meant to kept simple
+    -- meant to be kept simple
     function yn:yes () print ('User chose yes!') end
     function yn:no  () print ('User chose no!')  end
 
@@ -195,32 +197,41 @@ function lui:prev () lui._act:prev () end
 
 -- this handles timed data structures
 function lui:update (dt)
-    
-    for i, e in ipairs (lui.anim_stack) do
-	if e._visible then
 
-	    e._lt = e._lt +dt
-	    while e._lt > lui.smooth_speed /1000 do
-		
-		local o = u8.offset (e.curr_line, e._lc)
-
-		if e._lc < #e.curr_line then
-		    local o2 = u8.offset (e.curr_line, e._lc+1)
-		    e._l = e._l .. e.curr_line:sub (o, o2 -1)
-		else
-		    e._l = e._l .. e.curr_line:sub (o)
-		end
-
-		e._lc = e._lc +1
-		e._lt = e._lt - lui.smooth_speed /1000
-
-		if e._lc > u8.len (e.curr_line) then
-		    table.remove (lui.anim_stack, i)
-		    break
-		end
-	    end
-	    
+    if lui.text_anim == false then
+	for i, e in ipairs (lui.anim_stack) do
+	    e._l = e.curr_line
 	end
+	lui.anim_stack = {}
+    else
+	
+	for i, e in ipairs (lui.anim_stack) do
+	    if e._visible then
+
+		e._lt = e._lt +dt
+		while e._lt > lui.smooth_speed /1000 do
+		    
+		    local o = u8.offset (e.curr_line, e._lc)
+
+		    if e._lc < #e.curr_line then
+			local o2 = u8.offset (e.curr_line, e._lc+1)
+			e._l = e._l .. e.curr_line:sub (o, o2 -1)
+		    else
+			e._l = e._l .. e.curr_line:sub (o)
+		    end
+
+		    e._lc = e._lc +1
+		    e._lt = e._lt - lui.smooth_speed /1000
+
+		    if e._lc > u8.len (e.curr_line) then
+			table.remove (lui.anim_stack, i)
+			break
+		    end
+		end
+		
+	    end
+	end
+
     end
     
 end
@@ -228,15 +239,21 @@ end
 -- this handles all the UI drawing
 function lui:draw ()   
 
+    local curr_font = lg.getFont ()
+    local _r, _g, _b, _a = lg.getColor ()
+    local curr_color = {_r, _g, _b, _a}
+    
     -- iterate over draw_stackremove any  from here, this should be drawing ONLY
     for i, e in ipairs (lui.draw_stack) do
 	if e._visible then
 	    -- this is not ready for anything other than the 'box' suptype
+
+	    lg.setFont (e.font)
 	    
 	    local x, y = e.get_pos  ()
 	    local w, h = e.get_size ()
-	    local p = e.get_padding ()
-
+	    local p = e.padding
+	    
 	    if e._layout ~= nil then
 		local l = e._layout
 
@@ -249,15 +266,25 @@ function lui:draw ()
 		
 	    end
 	    
-	    lg.setColor (lui.border_color)
+	    lg.setColor (e.border_color)
 	    lg.rectangle ('line', x, y, w, h)
 
+	    lg.setColor (e.background_color)
+	    lg.rectangle ('fill', x, y, w, h)
+	    
+	    lg.setColor (e.text_color)
+	    
 	    -- for a textbox just print the current text
 	    if e._type == 'text' then
 		if e.img ~= nil then
+		    
+		    lg.setColor (curr_color)
 		    local iw = e.img:getWidth ()
 		    lg.draw (e.img, x +p, y +p)
+		    
+		    lg.setColor (e.text_color)
 		    lg.printf (e._l, x +2*p +iw, y +p, w -3*p -iw, 'left')
+
 		else		    
 		    lg.printf (e._l, x +p, y +p, w -2*p, 'left')
 		end
@@ -276,12 +303,16 @@ function lui:draw ()
 		end
 	    elseif e._type == 'yn' then
 
-		f = lg.getFont ()
-		fw = f:getWidth (e.no_text)
-		fh = f:getHeight ()
+		local fw = e.font:getWidth (e.no_text)
+		local fh = e.font:getHeight ()
 
 		-- perfect. /s
 		lg.printf (e.text, x+p, y+p, w-2*p, 'center')
+
+		lg.setFont (e.yn_font)
+		fw = e.yn_font:getWidth (e.no_text)
+		fh = e.yn_font:getHeight ()
+		
 		lg.printf (e.yes_text, x+3*p, y+h-2*p-fh, w/4, 'left')
 		lg.printf (e.no_text, x+w-3*p-fw, y+h-2*p-fh, w/4, 'left')
 		
@@ -291,6 +322,10 @@ function lui:draw ()
 
 	::continue::
     end
+
+    -- restore state so dev doesn't get a random font
+    lg.setFont (curr_font)
+    lg.setColor (curr_color)
     
 end
 
@@ -312,14 +347,18 @@ new_box = function (x, y, w, h)
 	b._w, b._h = w, h
     end
 
-    b._i = 1                  -- which line is currently relevant
-    b._visible = true         -- if object is drawn
-    b._pad = lui.text_padding -- text distance from border
+    b._i = 1                     -- which line is currently relevant
+    b._visible = true            -- if object is drawn
+    b.padding = lui.text_padding -- text distance from border
+    b.border_color = lui.border_color
+    b.text_color = lui.text_color
+    b.background_color = lui.background_color
+    
+    b.font = lg.getFont ()    -- font used in the element
 
     -- get, set, hide, show and prep work for subobjects (so love / lua won't crash)
     function b:get_pos () return b._x, b._y end
     function b:get_size () return b._w, b._h end
-    function b:get_padding () return b._pad end
     function b:set_pos (x, y)
 	if lui.perc_coords then b._x, b._y = perc_to_abs (x, y)
 	else b._x, b._y = x, y
@@ -330,7 +369,6 @@ new_box = function (x, y, w, h)
 	else b._w, b._h = w, h
 	end
     end
-    function b:set_padding (p) b._pad = p end
     function b:hide () b._visible = false end
     function b:show () b._visible = true  end
     function b:up   () end
