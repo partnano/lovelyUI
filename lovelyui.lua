@@ -14,8 +14,7 @@ local id_count = 0
 local lui = {
     width, height    = nil, nil,
     perc_coords      = true,
-    utf8_supp        = true,
-    border           = 'rectangle',
+    box              = nil,  -- set a bit later in code
     border_color     = {255, 255, 255},
     text_color       = {255, 255, 255},
     background_color = {50, 50, 50},
@@ -25,21 +24,22 @@ local lui = {
     fin_indicator    = true
 }
 
-lui.draw_stack = {}
-lui.anim_stack = {}
+lui.draw_stack = {}  -- for drawing of elements
+lui.anim_stack = {}  -- for text animation
 
 -- set defaults, everything is purely optional
 function lui:set_defaults (conf)
     
-    if conf.width         ~= nil then lui.width         = conf.width         end
-    if conf.height        ~= nil then lui.height        = conf.height        end
-    if conf.perc_coords   ~= nil then lui.perc_coords   = conf.perc_coords   end
-    if conf.uft8_supp     ~= nil then lui.utf8_supp     = conf.uft8_supp     end
-    if conf.border        ~= nil then lui.border        = conf.border        end
-    if conf.border_color  ~= nil then lui.border_color  = conf.border_color  end
-    if conf.text_smooth   ~= nil then lui.text_smooth   = conf.text_smooth   end
-    if conf.smooth_speed  ~= nil then lui.smooth_speed  = conf.smooth_speed  end
-    if conf.fin_indicator ~= nil then lui.fin_indicator = conf.fin_indicator end
+    if conf.width            ~= nil then lui.width            = conf.width            end
+    if conf.height           ~= nil then lui.height           = conf.height           end
+    if conf.perc_coords      ~= nil then lui.perc_coords      = conf.perc_coords      end
+    if conf.box              ~= nil then lui.box              = conf.box              end
+    if conf.border_color     ~= nil then lui.border_color     = conf.border_color     end
+    if conf.text_color       ~= nil then lui.text_color       = conf.text_color       end
+    if conf.background_color ~= nil then lui.background_color = conf.background_color end
+    if conf.text_smooth      ~= nil then lui.text_smooth      = conf.text_smooth      end
+    if conf.smooth_speed     ~= nil then lui.smooth_speed     = conf.smooth_speed     end
+    if conf.fin_indicator    ~= nil then lui.fin_indicator    = conf.fin_indicator    end
     
 end
 
@@ -81,7 +81,8 @@ function lui:new_textbox (lines, x, y, w, h, img)
 	for k, v in ipairs (lui.anim_stack) do
 	    if t._id == v._id then table.remove (lui.anim_stack, k) end
 	end
-	
+
+	-- base values for text animation
 	t._l = ""
 	t._lt = 0
 	t._lc = 1
@@ -147,9 +148,6 @@ function lui:new_ynbox (text, x, y, w, h)
     function yn:yes () print ('User chose yes!') end
     function yn:no  () print ('User chose no!')  end
 
-    function yn:set_yes_text (text) s.yes_text = text end
-    function yn:set_no_text  (text) s.no_text  = text end
-    
     table.insert (lui.draw_stack, yn)
     return yn
 end
@@ -195,24 +193,61 @@ function lui:down () lui._act:down () end
 function lui:next () lui._act:next () end
 function lui:prev () lui._act:prev () end
 
+-- some default box themes
+-- pure love2d drawings
+lui.box_themes = {
+    rectangle = function (x, y, w, h, e)	
+	lg.setColor (e.background_color)
+	lg.rectangle ('fill', x, y, w, h)
+
+	lg.setColor (e.border_color)
+	lg.rectangle ('line', x, y, w, h)
+    end,
+
+    rounded_rectangle = function (x, y, w, h, e)	
+	lg.setColor (e.background_color)
+	lg.rectangle ('fill', x, y, w, h, 10, 10, 10)
+
+	lg.setColor (e.border_color)
+	lg.rectangle ('line', x, y, w, h, 10, 10, 20)
+    end,
+
+    ellipse = function (x, y, w, h, e)
+	lg.setColor (e.background_color)
+	lg.ellipse ('fill', x +w/2, y +h/2, w/1.5, h/1.5)
+
+	lg.setColor (e.border_color)
+	lg.ellipse ('line', x +w/2, y +h/2, w/1.5, h/1.5)
+    end
+}
+
+-- default box_theme
+lui.box = lui.box_themes.rounded_rectangle
+
 -- this handles timed data structures
 function lui:update (dt)
 
+    -- if text animation is turned off, just draw the full line
     if lui.text_anim == false then
 	for i, e in ipairs (lui.anim_stack) do
 	    e._l = e.curr_line
 	end
 	lui.anim_stack = {}
     else
-	
+
+	-- if text animation is turned on, draw only letters at a time
 	for i, e in ipairs (lui.anim_stack) do
 	    if e._visible then
 
+		-- element timer to determine when (and how many) letters are drawn in the frame
 		e._lt = e._lt +dt
-		while e._lt > lui.smooth_speed /1000 do
-		    
+		while e._lt > lui.smooth_speed /1000 do -- smooth speed in milliseconds
+
+		    -- find beginning letter to draw (utf8 compatible)
 		    local o = u8.offset (e.curr_line, e._lc)
 
+		    -- if not at the end of the line, find beginning of next letter
+		    -- next letter -1 byte = end of current letter
 		    if e._lc < #e.curr_line then
 			local o2 = u8.offset (e.curr_line, e._lc+1)
 			e._l = e._l .. e.curr_line:sub (o, o2 -1)
@@ -220,9 +255,12 @@ function lui:update (dt)
 			e._l = e._l .. e.curr_line:sub (o)
 		    end
 
+		    -- set counter for the next letter
 		    e._lc = e._lc +1
+		    -- deduct time for next drawing
 		    e._lt = e._lt - lui.smooth_speed /1000
 
+		    -- end, if the whole line is drawn
 		    if e._lc > u8.len (e.curr_line) then
 			table.remove (lui.anim_stack, i)
 			break
@@ -239,6 +277,7 @@ end
 -- this handles all the UI drawing
 function lui:draw ()   
 
+    -- get current font and color for reset purposes
     local curr_font = lg.getFont ()
     local _r, _g, _b, _a = lg.getColor ()
     local curr_color = {_r, _g, _b, _a}
@@ -248,7 +287,6 @@ function lui:draw ()
 	if e._visible then
 	    -- this is not ready for anything other than the 'box' suptype
 
-	    lg.setFont (e.font)
 	    
 	    local x, y = e.get_pos  ()
 	    local w, h = e.get_size ()
@@ -265,19 +303,19 @@ function lui:draw ()
 		x, y = x +l._x, y +l._y
 		
 	    end
-	    
-	    lg.setColor (e.border_color)
-	    lg.rectangle ('line', x, y, w, h)
 
-	    lg.setColor (e.background_color)
-	    lg.rectangle ('fill', x, y, w, h)
+	    lg.setFont (e.font)
+	    e.box_theme (x, y, w, h, e)
 	    
 	    lg.setColor (e.text_color)
+
+	    -- set font a second time to mostly prevent user shenanigans font-wise
+	    lg.setFont (e.font)
 	    
 	    -- for a textbox just print the current text
 	    if e._type == 'text' then
 		if e.img ~= nil then
-		    
+		    -- if it's a box with image, short reset to base color for the image
 		    lg.setColor (curr_color)
 		    local iw = e.img:getWidth ()
 		    lg.draw (e.img, x +p, y +p)
@@ -306,7 +344,7 @@ function lui:draw ()
 		local fw = e.font:getWidth (e.no_text)
 		local fh = e.font:getHeight ()
 
-		-- perfect. /s
+		-- perfect. /s (this maybe needs some fixing)
 		lg.printf (e.text, x+p, y+p, w-2*p, 'center')
 
 		lg.setFont (e.yn_font)
@@ -350,14 +388,16 @@ new_box = function (x, y, w, h)
     b._i = 1                     -- which line is currently relevant
     b._visible = true            -- if object is drawn
     b.padding = lui.text_padding -- text distance from border
+
     b.border_color = lui.border_color
     b.text_color = lui.text_color
     b.background_color = lui.background_color
-    
-    b.font = lg.getFont ()    -- font used in the element
+    b.font = lg.getFont ()       -- font used in the element
 
+    b.box_theme = lui.box
+    
     -- get, set, hide, show and prep work for subobjects (so love / lua won't crash)
-    function b:get_pos () return b._x, b._y end
+    function b:get_pos  () return b._x, b._y end
     function b:get_size () return b._w, b._h end
     function b:set_pos (x, y)
 	if lui.perc_coords then b._x, b._y = perc_to_abs (x, y)
