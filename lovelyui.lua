@@ -20,8 +20,7 @@ local lui = {
     background_color = {50, 50, 50},
     text_anim        = true,
     text_padding     = 10,
-    smooth_speed     = 10,
-    fin_indicator    = true
+    smooth_speed     = 10
 }
 
 lui.draw_stack = {}  -- for drawing of elements
@@ -39,7 +38,6 @@ function lui:set_defaults (conf)
     if conf.background_color ~= nil then lui.background_color = conf.background_color end
     if conf.text_smooth      ~= nil then lui.text_smooth      = conf.text_smooth      end
     if conf.smooth_speed     ~= nil then lui.smooth_speed     = conf.smooth_speed     end
-    if conf.fin_indicator    ~= nil then lui.fin_indicator    = conf.fin_indicator    end
     
 end
 
@@ -165,6 +163,10 @@ function lui:new_layout (x, y, w, h)
 	else
 	    table.insert (l.elements, e)
 	    e._layout = l
+
+	    if l._act == nil then
+		l._act = e
+	    end
 	end
     end
 
@@ -176,22 +178,53 @@ function lui:new_layout (x, y, w, h)
 		if v._id == e._id then
 		    table.remove (l.elements, k)
 		    e._layout = nil
+
+		    -- setting of the new active element, should the removed one be the active
+		    if l._act == e then
+			if l.elements[k+1] ~= nil then l._act = l.elements[k+1]
+			elseif l.elements[k-1] ~= nil then l._act = l.elements[k-1]
+			else
+			    l._act = nil
+			end
+		    end
 		end
 	    end
 	end
     end
 
+    function l:set_active (box)
+	for k, v in pairs (l.elements) do
+	    if v._id == box._id then
+		l._act = box
+		goto done
+	    end
+	end
+	
+	print ("Trying to add element not in layout!")
+
+	::done::
+    end
+    function l:get_active () return l._act end
+    function l:up   () l._act:up   () end
+    function l:down () l._act:down () end
+    function l:next () l._act:next () end
+    function l:prev () l._act:prev () end
+    function l:yes  () l._act:yes  () end
+    function l:no   () l._act:no   () end
+
     return l
     
 end
 
--- active-mechanism handling .. rather simple really
+-- global active-mechanism handling .. rather simple really
 function lui:set_active (box) lui._act = box end
 function lui:get_active () return lui._act end
 function lui:up   () lui._act:up   () end
 function lui:down () lui._act:down () end
 function lui:next () lui._act:next () end
 function lui:prev () lui._act:prev () end
+function lui:yes  () lui._act:yes  () end
+function lui.no   () lui._act:no   () end
 
 -- some default box themes
 -- pure love2d drawings
@@ -389,9 +422,10 @@ new_box = function (x, y, w, h)
     b._visible = true            -- if object is drawn
     b.padding = lui.text_padding -- text distance from border
 
-    b.border_color = lui.border_color
-    b.text_color = lui.text_color
+    b.border_color     = lui.border_color
+    b.text_color       = lui.text_color
     b.background_color = lui.background_color
+
     b.font = lg.getFont ()       -- font used in the element
 
     b.box_theme = lui.box
