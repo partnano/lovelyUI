@@ -14,7 +14,7 @@ local id_count = 0
 local lui = {
     width, height    = nil, nil,
     perc_coords      = true,
-    box              = nil,  -- set a bit later in code
+    box_theme        = nil,  -- set a bit later in code
     border_color     = {255, 255, 255},
     text_color       = {255, 255, 255},
     background_color = {50, 50, 50},
@@ -255,7 +255,7 @@ lui.box_themes = {
 }
 
 -- default box_theme
-lui.box = lui.box_themes.rounded_rectangle
+lui.box_theme = lui.box_themes.rounded_rectangle
 
 -- this handles timed data structures
 function lui:update (dt)
@@ -428,7 +428,7 @@ new_box = function (x, y, w, h)
 
     b.font = lg.getFont ()       -- font used in the element
 
-    b.box_theme = lui.box
+    b.box_theme = lui.box_theme
     
     -- get, set, hide, show and prep work for subobjects (so love / lua won't crash)
     function b:get_pos  () return b._x, b._y end
