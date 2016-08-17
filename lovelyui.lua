@@ -363,13 +363,15 @@ function lui:draw ()
 	    elseif e._type == 'selection' then
 		-- for a selectionbox print all the text
 		-- but handle the hover line differently
+		
+		m = e.font:getWidth("M")
 		for k, line in ipairs (e.lines) do
 
 		    local breaks = ""
 		    for j = 1, k-1 do breaks = breaks.."\n" end
 		    
-		    if k == e._i then lg.printf (breaks..">", x +p, y +2*p, w -2*p, 'left') end
-		    lg.printf (breaks..line, x +p +20, y +2*p, w -2*p+40, 'left')
+		    if k == e._i then lg.printf (breaks..">", x +p, y +2*p, w -2*p, 'left') end		    
+		    lg.printf (breaks..line, x +p +m, y +2*p, w -2*p+40, 'left')
 
 		end
 	    elseif e._type == 'yn' then
@@ -384,8 +386,8 @@ function lui:draw ()
 		fw = e.yn_font:getWidth (e.no_text)
 		fh = e.yn_font:getHeight ()
 		
-		lg.printf (e.yes_text, x+3*p, y+h-2*p-fh, w/4, 'left')
-		lg.printf (e.no_text, x+w-3*p-fw, y+h-2*p-fh, w/4, 'left')
+		lg.printf (e.yes_text, x+3*p, y+h-2*p-fh, w/2, 'left')
+		lg.printf (e.no_text, x+w-3*p-fw, y+h-2*p-fh, w/2, 'left')
 		
 	    end
 

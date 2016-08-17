@@ -29,7 +29,7 @@ function love.load ()
 
     y1 = lovelyui:new_ynbox ("Will you accept this box?", 40, 45, 20, 15)
     y1.yn_font = fon_fancy
-    y1.no_text = "Nahh"
+    y1.no_text = "Nahh ..."
 
     t2 = lovelyui:new_textbox ({"This is a second textbox, just to show more stuff on screen."}, 15, 45, 20, 15)
     t2.font = fon_flat
