@@ -24,7 +24,9 @@ and execute the lovelyui update and draw functions in the respective love.update
 
 ## example
 
-*soon, with pretty pictures and everything*
+![here should be an example](https://github.com/partnano/lovelyui/blob/master/example.gif "Example")
+
+for the code, see ***main.lua***
 
 ## how to configure
 
@@ -151,6 +153,13 @@ these attributes and functions are available for all elements:
 	set_size():  sets element size (& recalcs if percentage based)
 	    hide():  hides element (doesn't get drawn until show() is called)
 	    show():  shows element if it was hidden
+
+the active mechanism that is available for layouts is globally available as well:
+
+	lovelyui:set_active(e): sets specified element to active one
+	lovelyui:get_active():  returns current active element (nil if there isn't one)
+	
+	lovelyui:up(), down(), next(), prev(), yes(), no()
 
 ### themes
 
