@@ -150,9 +150,11 @@ A global active mechanism is available as well, for focusing a single element an
 	lovelyui:set_active(e): sets specified element to active one
 	lovelyui:get_active():  returns current active element (nil if there isn't one)
 
-	all this methods are available globally without throwing an error,
-	however will only do something for the respective elements
-	lovelyui:up(), down(), next(), prev(), yes(), no()
+the following functions are available globally without throwing an error, however will only do something for the respective elements
+
+	lovelyui:up(),   down() -- for selection boxes
+	         next(), prev() -- for text boxes
+		     yes(),  no()   -- for yes/no boxes
 
 ### themes
 
@@ -169,9 +171,9 @@ These are not really special at all, but this was not the intended goal. For you
 	         x, y:  top right pixel coordinates of element
 	width, height:  pixel size of element
 		   active:  true/false depending if the element is active
-	            e:  the element itself if anything else is needed (optional)
+	      element:  the element itself if anything else is needed (optional)
 
-Here is a simple example (for some other examples look in the library code ;) ):
+Here is a simple example (for some other examples look at the library functions):
 
 	rounded_rectangle = function (x, y, w, h, a)	
 		lg.setColor ({230, 230, 230})
