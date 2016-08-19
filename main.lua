@@ -36,13 +36,17 @@ end
 function love.keypressed (k)
 
     if k == 'escape' then love.event.quit () end
+
+    if k == 'left'  then lovelyui:set_active (t1) end
+    if k == 'right' then lovelyui:set_active (s1) end
     
-    if k == 'return' then t1:next () end
-    if k == 'backspace' then t1:prev () end
-    if k == 'up' then s1:up () end
-    if k == 'down' then s1:down () end
+    if k == 'return'    then lovelyui:next () end
+    if k == 'backspace' then lovelyui:prev () end
+    if k == 'up'        then lovelyui:up   () end
+    if k == 'down'      then lovelyui:down () end
+    
     if k == 'y' then y1:yes () end
-    if k == 'n' then y1:no () end
+    if k == 'n' then y1:no  () end
     
 end
 

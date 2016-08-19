@@ -55,8 +55,8 @@ function lui:new_textbox (lines, x, y, w, h, img)
 	if t.lines[t._i +1] ~= nil then
 	    t._i = t._i +1
 	    t.curr_line = lines[t._i]
+	    t:reset_anim ()
 	end
-	t:reset_anim ()
     end
 
     -- show the previous line in the lines array, if available
@@ -64,8 +64,8 @@ function lui:new_textbox (lines, x, y, w, h, img)
 	if t.lines[t._i -1] ~= nil then
 	    t._i = t._i -1
 	    t.curr_line = lines[t._i]
+	    t:reset_anim ()
 	end
-	t:reset_anim ()
     end
 
     function t:reset_anim ()
@@ -202,11 +202,13 @@ function lui.no   () lui._act:no   () end
 -- some default box themes
 -- pure love2d drawings
 lui.box_themes = {
-    rounded_rectangle = function (x, y, w, h, e)	
+    rounded_rectangle = function (x, y, w, h, a)	
 	lg.setColor ({230, 230, 230})
 	lg.rectangle ('fill', x, y, w, h, 10, 10, 10)
 
-	lg.setColor ({80, 80, 80})
+	if a then lg.setColor ({20, 230, 20})
+	else lg.setColor ({80, 80, 80}) end
+	
 	lg.rectangle ('line', x, y, w, h, 10, 10, 20)
 
 	-- last color is also the text color
@@ -290,10 +292,9 @@ function lui:draw ()
 		x, y = x +l._x, y +l._y		
 	    end
 
-	    lg.setFont (e.font)
-	    e.box_theme (x, y, w, h, e)
+	    local a = e._id == lui:get_active()._id
 	    
-	    -- set font a second time to mostly prevent user shenanigans font-wise
+	    e.box_theme (x, y, w, h, a, e)
 	    lg.setFont (e.font)
 	    
 	    -- for a textbox just print the current text

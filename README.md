@@ -145,11 +145,13 @@ these attributes and functions are available for all elements:
 	    hide():  hides element (doesn't get drawn until show() is called)
 	    show():  shows element if it was hidden
 
-the active mechanism that is available for layouts is globally available as well:
+A global active mechanism is available as well, for focusing a single element and calling an action easily globally:
 
 	lovelyui:set_active(e): sets specified element to active one
 	lovelyui:get_active():  returns current active element (nil if there isn't one)
-	
+
+	all this methods are available globally without throwing an error,
+	however will only do something for the respective elements
 	lovelyui:up(), down(), next(), prev(), yes(), no()
 
 ### themes
@@ -158,25 +160,28 @@ Currently there is one default theme (more planned):
 
 	lovelyui.box_themes.rounded_rectangle
 
-These are not really special at all, but this was not the intended goal. For your own purposes just define a theme function that takes 5 parameters:
+These are not really special at all, but this was not the intended goal. For your own purposes just define a theme function that takes 5-6 parameters:
 
-	         x, y: top right pixel coordinates of element
-	width, height: pixel size of element
-	            e: the element itself if anything else is needed (e.g. the different colors)
+	function (x, y, width, height, active, [element])
+
+	         x, y:  top right pixel coordinates of element
+	width, height:  pixel size of element
+		   active:  true/false depending if the element is active
+	            e:  the element itself if anything else is needed (optional)
 
 Here is a simple example directly from the library code:
 
-	function rectangle (x, y, w, h, e)	
-	   -- background
-       lg.setColor ({230, 230, 230})
-	   lg.rectangle ('fill', x, y, w, h, 10, 10, 10)
+	rounded_rectangle = function (x, y, w, h, a)	
+		lg.setColor ({230, 230, 230})
+		lg.rectangle ('fill', x, y, w, h, 10, 10, 10)
 
-       -- border
-	   lg.setColor ({80, 80, 80})
-	   lg.rectangle ('line', x, y, w, h, 10, 10, 20)
+	    if a then lg.setColor ({20, 230, 20})
+	    else lg.setColor ({80, 80, 80}) end
+	
+	    lg.rectangle ('line', x, y, w, h, 10, 10, 20)
 
-	   -- last color is also the text color
-	   lg.setColor ({20, 20, 20})
+	    -- last color is also the text color
+	    lg.setColor ({20, 20, 20})
     end
 
 Assign your function to either the base option lovelyui.box_theme or to any element.box_theme and you're set!
