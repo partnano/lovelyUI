@@ -13,7 +13,7 @@ function love.load ()
     
     lg.setFont (fon_flat)
     
-    long_text = "Hello to this small example of my petproject: lovelyUI! This is a UI library mainly directed at adventure and RPG games. \nHere, have this: ¢"
+    long_text = "Hello to this small example of my petproject: lovelyUI! This is a UI library mainly directed at adventure and RPG games. \n\nHere, have this: ¢"
     
     s1 = lovelyui:new_selectionbox ({"Option 1", "Option 2", "Option 3"}, 40, 10, 10, 20)
     t1 = lovelyui:new_textbox ({long_text, "Hey, look! Another line."}, 5, 10, 30, 30, img)
@@ -24,8 +24,6 @@ function love.load ()
     layout:down ()
 
     t1.padding = 20
-    t1.border_color = {0, 0, 255}
-    t1.text_color = {255, 0, 0}
 
     y1 = lovelyui:new_ynbox ("Will you accept this box?", 40, 45, 20, 15)
     y1.yn_font = fon_fancy

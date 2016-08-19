@@ -26,6 +26,7 @@ and execute the lovelyui update and draw functions in the respective love.update
 
 ![here should be an example](https://github.com/partnano/lovelyui/blob/master/example.gif "Example")
 
+(image currently depicts older version)  
 for the code, see ***main.lua***
 
 ## how to configure
@@ -39,9 +40,6 @@ function, you can set your base config. These options are available (with their 
     width, height    = window width & height         -- for percentage positioning calculations
     perc_coords      = true                          -- percentage position turned on / off
     box              = lovelyui.box_themes.rectangle -- theme for the elements (function)
-    border_color     = {255, 255, 255}               -- border color
-    text_color       = {255, 255, 255}               -- text color
-    background_color = {50, 50, 50}                  -- background color
     text_padding     = 10                            -- inner distance text to border
     text_anim        = true                          -- text animation turned on / off
     smooth_speed     = 10                            -- animation speed in ms
@@ -142,10 +140,8 @@ these attributes and functions are available for all elements:
 
 	         padding:  distance text to border
 	       box_theme:  the theme of the element
-	    border_color
-	      text_color
-	background_color
-	            font
+	            font:  font of the text in the element
+    (attributes don't affect layouts)
 
 	 get_pos():  returns pixel position
     get_size():  returns pixel size
@@ -163,11 +159,9 @@ the active mechanism that is available for layouts is globally available as well
 
 ### themes
 
-Currently there are 3 really simple default themes:
+Currently there is one default theme (more planned):
 
-	lovelyui.box_themes.rectangle
 	lovelyui.box_themes.rounded_rectangle
-	lovelyui.box_themes.ellipse
 
 These are not really special at all, but this was not the intended goal. For your own purposes just define a theme function that takes 5 parameters:
 
@@ -178,11 +172,16 @@ These are not really special at all, but this was not the intended goal. For you
 Here is a simple example directly from the library code:
 
 	function rectangle (x, y, w, h, e)	
-		love.graphics.setColor (e.background_color)
-		love.graphics.rectangle ('fill', x, y, w, h)
+	   -- background
+       lg.setColor ({230, 230, 230})
+	   lg.rectangle ('fill', x, y, w, h, 10, 10, 10)
 
-		love.graphics.setColor (e.border_color)
-		love.graphics.rectangle ('line', x, y, w, h)
+       -- border
+	   lg.setColor ({80, 80, 80})
+	   lg.rectangle ('line', x, y, w, h, 10, 10, 20)
+
+	   -- last color is also the text color
+	   lg.setColor ({20, 20, 20})
     end
 
 Assign your function to either the base option lovelyui.box_theme or to any element.box_theme and you're set!

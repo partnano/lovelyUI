@@ -15,9 +15,6 @@ local lui = {
     width, height    = nil, nil,
     perc_coords      = true,
     box_theme        = nil,  -- set a bit later in code
-    border_color     = {255, 255, 255},
-    text_color       = {255, 255, 255},
-    background_color = {50, 50, 50},
     text_anim        = true,
     text_padding     = 10,
     smooth_speed     = 10
@@ -33,9 +30,6 @@ function lui:set_defaults (conf)
     if conf.height           ~= nil then lui.height           = conf.height           end
     if conf.perc_coords      ~= nil then lui.perc_coords      = conf.perc_coords      end
     if conf.box              ~= nil then lui.box              = conf.box              end
-    if conf.border_color     ~= nil then lui.border_color     = conf.border_color     end
-    if conf.text_color       ~= nil then lui.text_color       = conf.text_color       end
-    if conf.background_color ~= nil then lui.background_color = conf.background_color end
     if conf.text_smooth      ~= nil then lui.text_smooth      = conf.text_smooth      end
     if conf.smooth_speed     ~= nil then lui.smooth_speed     = conf.smooth_speed     end
     
@@ -229,28 +223,15 @@ function lui.no   () lui._act:no   () end
 -- some default box themes
 -- pure love2d drawings
 lui.box_themes = {
-    rectangle = function (x, y, w, h, e)	
-	lg.setColor (e.background_color)
-	lg.rectangle ('fill', x, y, w, h)
-
-	lg.setColor (e.border_color)
-	lg.rectangle ('line', x, y, w, h)
-    end,
-
     rounded_rectangle = function (x, y, w, h, e)	
-	lg.setColor (e.background_color)
+	lg.setColor ({230, 230, 230})
 	lg.rectangle ('fill', x, y, w, h, 10, 10, 10)
 
-	lg.setColor (e.border_color)
+	lg.setColor ({80, 80, 80})
 	lg.rectangle ('line', x, y, w, h, 10, 10, 20)
-    end,
 
-    ellipse = function (x, y, w, h, e)
-	lg.setColor (e.background_color)
-	lg.ellipse ('fill', x +w/2, y +h/2, w/1.5, h/1.5)
-
-	lg.setColor (e.border_color)
-	lg.ellipse ('line', x +w/2, y +h/2, w/1.5, h/1.5)
+	-- last color is also the text color
+	lg.setColor ({20, 20, 20})
     end
 }
 
@@ -312,8 +293,7 @@ function lui:draw ()
 
     -- get current font and color for reset purposes
     local curr_font = lg.getFont ()
-    local _r, _g, _b, _a = lg.getColor ()
-    local curr_color = {_r, _g, _b, _a}
+    local curr_color = {lg.getColor ()}
     
     -- iterate over draw_stackremove any  from here, this should be drawing ONLY
     for i, e in ipairs (lui.draw_stack) do
@@ -340,8 +320,6 @@ function lui:draw ()
 	    lg.setFont (e.font)
 	    e.box_theme (x, y, w, h, e)
 	    
-	    lg.setColor (e.text_color)
-
 	    -- set font a second time to mostly prevent user shenanigans font-wise
 	    lg.setFont (e.font)
 	    
@@ -349,11 +327,13 @@ function lui:draw ()
 	    if e._type == 'text' then
 		if e.img ~= nil then
 		    -- if it's a box with image, short reset to base color for the image
+		    text_col = {lg.getColor()}
 		    lg.setColor (curr_color)
+
 		    local iw = e.img:getWidth ()
 		    lg.draw (e.img, x +p, y +p)
 		    
-		    lg.setColor (e.text_color)
+		    lg.setColor (text_col)
 		    lg.printf (e._l, x +2*p +iw, y +p, w -3*p -iw, 'left')
 
 		else		    
@@ -423,10 +403,6 @@ new_box = function (x, y, w, h)
     b._i = 1                     -- which line is currently relevant
     b._visible = true            -- if object is drawn
     b.padding = lui.text_padding -- text distance from border
-
-    b.border_color     = lui.border_color
-    b.text_color       = lui.text_color
-    b.background_color = lui.background_color
 
     b.font = lg.getFont ()       -- font used in the element
 
