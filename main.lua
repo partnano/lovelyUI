@@ -15,22 +15,21 @@ function love.load ()
     
     long_text = "Hello to this small example of my petproject: lovelyUI! This is a UI library mainly directed at adventure and RPG games. \n\nHere, have this: ¢"
     
-    s1 = lovelyui:new_selectionbox ({"Option 1", "Option 2", "Option 3"}, 40, 10, 10, 20)
-    t1 = lovelyui:new_textbox ({long_text, "Hey, look! Another line."}, 5, 10, 30, 30, img)
-
-    layout = lovelyui:new_layout (10, 0, 50, 50)
-    layout:add_element (s1)
-    layout:add_element (t1)
-    layout:down ()
-
+    s1 = lovelyui:new_selectionbox ({"Option 1", "Option 2", "Option 3"}, 45, 15, 10, 20)
+    t1 = lovelyui:new_textbox ({long_text, "Hey, look! Another line."}, 10, 10, 30, 25, img)
     t1.padding = 20
 
-    y1 = lovelyui:new_ynbox ("Will you accept this box?", 40, 45, 20, 15)
+    layout = lovelyui:new_layout (10, 40, 50, 50)
+
+    y1 = lovelyui:new_ynbox ("Will you accept this box?", 50, 0, 45, 30)
     y1.yn_font = fon_fancy
     y1.no_text = "Nahh ..."
 
-    t2 = lovelyui:new_textbox ({"This is a second textbox, just to show more stuff on screen."}, 15, 45, 20, 15)
+    t2 = lovelyui:new_textbox ({"This textbox and yes/no box are managed in a layout!"}, 0, 0, 45, 30)
     t2.font = fon_flat
+
+    layout:add_element (y1)
+    layout:add_element (t2)
     
 end
 

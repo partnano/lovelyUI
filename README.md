@@ -2,7 +2,7 @@
 
 ---
 
-This little library is supposed to help you to quickly set up a simple UI, which however leaves you as much freedom as you want. It offers simple element creation, percentage based positioning, a simple text animation and other things. Most of the options can be configured, so, for example, shouldn't you like percentage based position, just turn it off!
+This little library is supposed to help you to quickly set up a simple UI, which however leaves you as much freedom as you want. It offers simple element creation, percentage based positioning, a simple text animation and other things. Most of the options can be configured, so, for example, shouldn't you like that x=100 is the rightmost edge of the window, just turn the functionality off!
 
 **Hey folks, small lua-style disclaimer**: Although I don't always use *self* in functions I generally differentiate between attributes (table.attribute) and functions (table:function)
 
@@ -117,7 +117,8 @@ example:
 
 ### layouts
 
-layouts are non-drawn elements, which give the ability to group elements, move them together and limit the area, in which they are drawn. (Always going from the origin x/y (top right))
+Layouts are non-drawn elements to manage and group other elements. These are really only useful with percentage based positioning,
+since they scale and position relative to the layout values. (e.g. x=0 is layout-x and x=100 is layout-x+layout-w
 
 	:new_layout (x, y, width, height)
 
@@ -127,12 +128,6 @@ These attributes and functions are available:
 
 	   add_element(e):  add an element to the layout
 	remove_element(e):  removes specified element from the layout
-	    set_active(e):  sets the specified element in the layout active
-	     get_active():  returns the current active element (nil if no active)
-	
-	  up(), down():  active element functions (if active is a selectionbox)
-	next(), prev():  active element functions (if active is a textbox)
-	   yes(), no():  active element functions (if active is a ynbox)
 
 ### general attributes & functions
 

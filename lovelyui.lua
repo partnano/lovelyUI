@@ -155,12 +155,11 @@ function lui:new_layout (x, y, w, h)
 	if e._suptype ~= 'box' then
 	    print ("Trying to add non lovelyUI element!")
 	else
-	    table.insert (l.elements, e)
 	    e._layout = l
+	    e:set_size (e._bw, e._bh)
+	    e:set_pos (e._bx, e._by)
 
-	    if l._act == nil then
-		l._act = e
-	    end
+	    table.insert (l.elements, e)
 	end
     end
 
@@ -185,26 +184,6 @@ function lui:new_layout (x, y, w, h)
 	    end
 	end
     end
-
-    function l:set_active (box)
-	for k, v in pairs (l.elements) do
-	    if v._id == box._id then
-		l._act = box
-		goto done
-	    end
-	end
-	
-	print ("Trying to add element not in layout!")
-
-	::done::
-    end
-    function l:get_active () return l._act end
-    function l:up   () l._act:up   () end
-    function l:down () l._act:down () end
-    function l:next () l._act:next () end
-    function l:prev () l._act:prev () end
-    function l:yes  () l._act:yes  () end
-    function l:no   () l._act:no   () end
 
     return l
     
@@ -308,13 +287,7 @@ function lui:draw ()
 	    if e._layout ~= nil then
 		local l = e._layout
 
-		-- if origin point is outside of layout, don't draw
-		if x > l._w or y > l._h then
-		    goto continue
-		end
-
-		x, y = x +l._x, y +l._y
-		
+		x, y = x +l._x, y +l._y		
 	    end
 
 	    lg.setFont (e.font)
@@ -372,8 +345,6 @@ function lui:draw ()
 	    end
 
 	end
-
-	::continue::
     end
 
     -- restore state so dev doesn't get a random font
@@ -391,6 +362,9 @@ new_box = function (x, y, w, h)
 
     b._suptype = 'box'
 
+    -- unchanged base values
+    b._bx, b._by, b._bw, b._bh = x, y, w, h
+    
     -- if settings say percentage, position and size need to be recalculated
     if lui.perc_coords then
 	b._x, b._y = perc_to_abs (x, y)
@@ -411,14 +385,20 @@ new_box = function (x, y, w, h)
     -- get, set, hide, show and prep work for subobjects (so love / lua won't crash)
     function b:get_pos  () return b._x, b._y end
     function b:get_size () return b._w, b._h end
-    function b:set_pos (x, y)
-	if lui.perc_coords then b._x, b._y = perc_to_abs (x, y)
-	else b._x, b._y = x, y
+    function b:set_pos (sx, sy)
+	if lui.perc_coords then
+	    if b._layout ~= nil then b._x, b._y = perc_to_abs (sx, sy, b._layout:get_size())
+	    else b._x, b._y = perc_to_abs (sx, sy)
+	    end
+	else b._x, b._y = sx, sy
 	end
     end
-    function b:set_size (w, h)
-	if lui.perc_coords then b._w, b._h = perc_to_abs (w, h)
-	else b._w, b._h = w, h
+    function b:set_size (sw, sh)
+	if lui.perc_coords then
+	    if b._layout ~= nil then b._w, b._h = perc_to_abs (sw, sh, b._layout:get_size())
+	    else b._w, b._h = perc_to_abs (sw, sh)
+	    end
+	else b._w, b._h = sw, sh
 	end
     end
     function b:hide () b._visible = false end
@@ -439,11 +419,13 @@ new_box = function (x, y, w, h)
 end
 
 -- calc for percentage to actual pixelcoords
-perc_to_abs = function (x, y)
+perc_to_abs = function (x, y, w, h)
     -- small integritycheck
     if lui.width  == nil then lui.width  = lg.getWidth  () end
     if lui.height == nil then lui.height = lg.getHeight () end
-    return (lui.width /100) *x, (lui.height /100) *y
+
+    local _w, _h = w or lui.width, h or lui.height
+    return (_w /100) *x, (_h /100) *y
 end
 
 -- simple debug print
