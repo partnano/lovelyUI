@@ -156,20 +156,22 @@ A global active mechanism is available as well, for focusing a single element an
 
 ### themes
 
-Currently there is one default theme (more planned):
+For now there are 3 default themes:
 
-	lovelyui.box_themes.rounded_rectangle
+	lovelyui.box_themes.def1
+	lovelyui.box_themes.def2
+	lovelyui.box_themes.old_school
 
-These are not really special at all, but this was not the intended goal. For your own purposes just define a theme function that takes 5-6 parameters:
+These are not really special at all, but this was not the intended goal. For your own purposes just define a theme function that takes 4-6 parameters:
 
-	function (x, y, width, height, active, [element])
+	function (x, y, width, height, [active, [element]])
 
 	         x, y:  top right pixel coordinates of element
 	width, height:  pixel size of element
 		   active:  true/false depending if the element is active
 	            e:  the element itself if anything else is needed (optional)
 
-Here is a simple example directly from the library code:
+Here is a simple example (for some other examples look in the library code ;) ):
 
 	rounded_rectangle = function (x, y, w, h, a)	
 		lg.setColor ({230, 230, 230})
@@ -180,7 +182,7 @@ Here is a simple example directly from the library code:
 	
 	    lg.rectangle ('line', x, y, w, h, 10, 10, 20)
 
-	    -- last color is also the text color
+	    -- last setcolor is for the text color
 	    lg.setColor ({20, 20, 20})
     end
 

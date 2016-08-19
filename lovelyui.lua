@@ -202,22 +202,54 @@ function lui.no   () lui._act:no   () end
 -- some default box themes
 -- pure love2d drawings
 lui.box_themes = {
-    rounded_rectangle = function (x, y, w, h, a)	
-	lg.setColor ({230, 230, 230})
-	lg.rectangle ('fill', x, y, w, h, 10, 10, 10)
+    def1 = function (x, y, w, h, a)	
+	if a then lg.setColor ({230, 230, 230})
+	else lg.setColor ({180, 180, 180}) end
+	lg.rectangle ('fill', x-3, y-3, w+6, h+6, 5, 5, 5)
 
-	if a then lg.setColor ({20, 230, 20})
-	else lg.setColor ({80, 80, 80}) end
+	if a then lg.setColor ({0, 0, 0})
+	else lg.setColor ({30, 30, 30}) end
 	
-	lg.rectangle ('line', x, y, w, h, 10, 10, 20)
+	lg.rectangle ('line', x, y, w, h, 5, 5, 30)
+	lg.rectangle ('line', x-3, y-3, w+6, h+6, 5, 5, 30)
 
 	-- last color is also the text color
 	lg.setColor ({20, 20, 20})
+    end,
+
+    def2 = function (x, y, w, h, a)
+	if a then lg.setColor ({15, 15, 15})
+	else lg.setColor ({30, 30, 30}) end
+	lg.rectangle ('fill', x-3, y-3, w+6, h+6, 5, 5, 5)
+
+	if a then lg.setColor ({240, 240, 240})
+	else lg.setColor ({200, 200, 200}) end
+	
+	lg.rectangle ('line', x, y, w, h, 5, 5, 30)
+	lg.rectangle ('line', x-3, y-3, w+6, h+6, 5, 5, 30)
+
+	-- last color is also the text color
+	lg.setColor ({200, 200, 200})
+    end,
+
+    old_school = function (x, y, w, h)
+	-- this does not care about active
+	lg.setColor ({255, 255, 255})
+	lg.rectangle ('fill', x, y, w, h, 20, 20, 2)
+
+	lg.setColor ({0, 0, 0})
+	lg.rectangle ('line', x, y, w, h, 20, 20, 2)
+	lg.rectangle ('line', x-1, y-1, w+2, h+2, 20, 20, 2)
+
+	-- text color
+	lg.setColor ({0, 0, 0})
     end
+
+    
 }
 
 -- default box_theme
-lui.box_theme = lui.box_themes.rounded_rectangle
+lui.box_theme = lui.box_themes.def2
 
 -- this handles timed data structures
 function lui:update (dt)
