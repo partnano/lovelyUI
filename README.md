@@ -24,9 +24,8 @@ and execute the lovelyui update and draw functions in the respective love.update
 
 ## example
 
-![here should be an example](https://github.com/partnano/lovelyui/blob/master/example.gif "Example")
+![here should be an example](https://github.com/partnano/lovelyui/blob/master/dat/example.gif "Example")
 
-(image currently depicts older version)  
 for the code, see ***main.lua***
 
 ## how to configure
@@ -81,7 +80,8 @@ A box of horizontal options (text lines) with indicator (currently a ">")
 
 These attributes and functions are available:
 
-    lines:  array of all the options
+	    lines:  array of all the options
+	indicator:  the String shown to indicate the selected line
     
     curr_hover():  returns the line / option that is currently indicated
             up():  moves indicator up

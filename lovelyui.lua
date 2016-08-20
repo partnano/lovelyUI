@@ -81,7 +81,7 @@ function lui:new_textbox (lines, x, y, w, h, img)
 	table.insert (lui.anim_stack, t)
     end
 
-    -- is this is the first object, set it active
+    -- if this is the first object, set it active
     if lui._act == nil then lui:set_active (t) end
 
     -- insert into draw stack, anim_stack and return it for the user
@@ -98,8 +98,9 @@ function lui:new_selectionbox (lines, x, y, w, h)
     -- be a base box
     local s = new_box (x, y, w, h)
 
-    s._type = 'selection' -- what this is, important for draw_stack
-    s.lines   = lines     -- text displayed
+    s._type     = 'selection' -- what this is, important for draw_stack
+    s.lines     = lines       -- text displayed
+    s.indicator = ">"
 
     -- text, which is currently indicated at
     function s:curr_hover ()
@@ -244,8 +245,6 @@ lui.box_themes = {
 	-- text color
 	lg.setColor ({0, 0, 0})
     end
-
-    
 }
 
 -- default box_theme
@@ -308,12 +307,11 @@ function lui:draw ()
     local curr_font = lg.getFont ()
     local curr_color = {lg.getColor ()}
     
-    -- iterate over draw_stackremove any  from here, this should be drawing ONLY
+    -- iterate over draw_stack
     for i, e in ipairs (lui.draw_stack) do
 	if e._visible then
 	    -- this is not ready for anything other than the 'box' suptype
 
-	    
 	    local x, y = e.get_pos  ()
 	    local w, h = e.get_size ()
 	    local p = e.padding
@@ -329,7 +327,6 @@ function lui:draw ()
 	    e.box_theme (x, y, w, h, a, e)
 	    lg.setFont (e.font)
 	    
-	    -- for a textbox just print the current text
 	    if e._type == 'text' then
 		if e.img ~= nil then
 		    -- if it's a box with image, short reset to base color for the image
@@ -356,10 +353,11 @@ function lui:draw ()
 		    local breaks = ""
 		    for j = 1, k-1 do breaks = breaks.."\n" end
 		    
-		    if k == e._i then lg.printf (breaks..">", x +p, y +2*p, w -2*p, 'left') end		    
+		    if k == e._i then lg.printf (breaks..e.indicator, x +p, y +2*p, w -2*p, 'left') end		    
 		    lg.printf (breaks..line, x +p +m, y +2*p, w -2*p+40, 'left')
 
 		end
+		
 	    elseif e._type == 'yn' then
 
 		local fw = e.font:getWidth (e.no_text)

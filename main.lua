@@ -8,9 +8,9 @@ function love.load ()
     lw.setMode (1600, 900)
     lg.setBackgroundColor ({40, 40, 40})
 
-    img = lg.newImage ("avatar.png")
-    fon_flat = lg.newFont ("Aileron-Regular.otf", 20)
-    fon_fancy = lg.newFont ("Merriweather-Regular.ttf", 24)
+    img = lg.newImage ("dat/avatar.png")
+    fon_flat = lg.newFont ("dat/Aileron-Regular.otf", 20)
+    fon_fancy = lg.newFont ("dat/Merriweather-Regular.ttf", 24)
     
     lg.setFont (fon_flat)
     
