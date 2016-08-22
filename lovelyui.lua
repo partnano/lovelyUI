@@ -49,12 +49,19 @@ function lui:new_textbox (lines, x, y, w, h, img)
     t._l        = ""           -- for text animation
     t._lt       = 0            -- for text animation
     t._lc       = 1            -- for text animation
+
+    t.at_begin  = true
+    t.at_end    = false
     
     -- show the next line in the lines array, if available
     function t:next ()
 	if t.lines[t._i +1] ~= nil then
 	    t._i = t._i +1
 	    t.curr_line = lines[t._i]
+
+	    if t._i >= #t.lines then t.at_end   = true end
+	    if t._i > 1         then t.at_begin = false end
+	    
 	    t:reset_anim ()
 	end
     end
@@ -64,6 +71,10 @@ function lui:new_textbox (lines, x, y, w, h, img)
 	if t.lines[t._i -1] ~= nil then
 	    t._i = t._i -1
 	    t.curr_line = lines[t._i]
+
+	    if t._i <= 1       then t.at_begin = true end
+	    if t._i < #t.lines then t.at_end   = false end
+	    
 	    t:reset_anim ()
 	end
     end
@@ -115,6 +126,12 @@ function lui:new_selectionbox (lines, x, y, w, h)
     -- move indicator down by one
     function s:down ()
 	if s._i < #s.lines then s._i = s._i +1 end
+    end
+
+    -- move indicator to specified position
+    function s:set_indicator (i)
+	if i > 0 and i <= #s.lines then s._i = i
+	else print ("Indicator set to invalid value!") end
     end
 
     -- first object to be created? set active
@@ -412,6 +429,13 @@ new_box = function (x, y, w, h)
     b.font = lg.getFont ()       -- font used in the element
 
     b.box_theme = lui.box_theme
+
+    -- cleanly removes from draw_stack
+    function b:destroy ()
+	for k, v in ipairs (draw_stack) do
+	    if v._id == b._id then table.remove (draw_stack, k) end
+	end
+    end
     
     -- get, set, hide, show and prep work for subobjects (so love / lua won't crash)
     function b:get_pos  () return b._x, b._y end

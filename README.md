@@ -65,6 +65,8 @@ These attributes and functions are available:
         lines:  array of all the text lines
     curr_line:  the currently displayed line
           img:  the image displayed
+	 at_begin:  boolean, true if displaying first line in array
+	   at_end:  boolean, true if displaying last line in array
 
           next():  display next line in array
           prev():  display prev line in array
@@ -83,9 +85,10 @@ These attributes and functions are available:
 	    lines:  array of all the options
 	indicator:  the String shown to indicate the selected line
     
-    curr_hover():  returns the line / option that is currently indicated
-            up():  moves indicator up
-          down():  moves indicator down
+        curr_hover():  returns the line / option that is currently indicated
+                up():  moves indicator up
+		      down():  moves indicator down
+    set_indicator(i):  moves indicator to specified location (int)	
 
 ### yes / no selection box
 
@@ -126,8 +129,8 @@ These attributes and functions are available:
 
 	elements:  the elements managed by this layout
 
-	   add_element(e):  add an element to the layout
-	remove_element(e):  removes specified element from the layout
+	   add_element(e):  add an element to the layout (lovelyUI element)
+	remove_element(e):  removes specified element from the layout (lovelyUI element)
 
 ### general attributes & functions
 
@@ -138,16 +141,17 @@ these attributes and functions are available for all elements:
 	            font:  font of the text in the element
     (attributes don't affect layouts)
 
-	 get_pos():  returns pixel position
-    get_size():  returns pixel size
-	 set_pos():  sets element position (& recalcs if percentage based)
-	set_size():  sets element size (& recalcs if percentage based)
-	    hide():  hides element (doesn't get drawn until show() is called)
-	    show():  shows element if it was hidden
+	     get_pos():  returns pixel position
+        get_size():  returns pixel size
+	 set_pos(x, y):  sets element position (& recalcs if percentage based) (float, float)
+	set_size(w, h):  sets element size (& recalcs if percentage based) (float, float)
+	        hide():  hides element (doesn't get drawn until show() is called)
+	        show():  shows element if it was hidden
+	     destroy():  removes element from lovelyUI draw stack (if you want to only hide temporarily, use hide())
 
 A global active mechanism is available as well, for focusing a single element and calling an action easily globally:
 
-	lovelyui:set_active(e): sets specified element to active one
+	lovelyui:set_active(e): sets specified element to active one (lovelyUI element)
 	lovelyui:get_active():  returns current active element (nil if there isn't one)
 
 the following functions are available globally without throwing an error, however will only do something for the respective elements
