@@ -24,7 +24,7 @@ and execute the lovelyui update and draw functions in the respective love.update
 
 ## example
 
-![here should be an example](https://github.com/partnano/lovelyui/blob/master/dat/example.gif "Example")
+![here should be an example](https://github.com/partnano/lovelyUI/blob/master/dat/example.gif "Example")
 
 for the code, see ***main.lua***
 
