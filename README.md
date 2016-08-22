@@ -2,7 +2,7 @@
 
 ---
 
-This little library is supposed to help you to quickly set up a simple UI, which however leaves you as much freedom as you want. It offers simple element creation, percentage based positioning, a simple text animation and other things. Most of the options can be configured, so, for example, shouldn't you like that x=100 is the rightmost edge of the window, just turn the functionality off!
+This little library is supposed to help you to quickly set up a simple UI, which however leaves you as much freedom as you want. It offers simple create-and-go element creation, percentage based positioning, a simple text animation and other things. It also features a do-it-yourself theming mechanism, to give you full control over what is actually drawn on screen!
 
 **Hey folks, small lua-style disclaimer**: Although I don't always use *self* in functions I generally differentiate between attributes (table.attribute) and functions (table:function)
 
@@ -62,11 +62,11 @@ A textbox that displays text and optionally an image.
 
 These attributes and functions are available:
 
-        lines:  array of all the text lines
-    curr_line:  the currently displayed line
-          img:  the image displayed
-	 at_begin:  boolean, true if displaying first line in array
-	   at_end:  boolean, true if displaying last line in array
+        lines:  all text lines (array)
+    curr_line:  the currently displayed line (string)
+          img:  the image displayed (love image)
+	 at_begin:  true if displaying first line in array (boolean)
+	   at_end:  true if displaying last line in array (boolean)
 
           next():  display next line in array
           prev():  display prev line in array
@@ -82,8 +82,8 @@ A box of horizontal options (text lines) with indicator (currently a ">")
 
 These attributes and functions are available:
 
-	    lines:  array of all the options
-	indicator:  the String shown to indicate the selected line
+	    lines:  all options (array)
+	indicator:  the symbol shown to indicate the selected line (string)
     
         curr_hover():  returns the line / option that is currently indicated
                 up():  moves indicator up
@@ -101,10 +101,10 @@ A small yes / no dialogue
 
 These attributes and functions are available:
 
-	    text:  displayed string
-	yes_text:  string for the yes answer
-	 no_text:  string for the no answer
-	 yn_font:  font for the yes / no strings
+	    text:  displayed string (string)
+	yes_text:  yes text (string)
+	 no_text:  no text (string)
+	 yn_font:  font for the yes / no strings (love font)
 
 	yes():  yes action
 	 no():  no action
@@ -136,18 +136,21 @@ These attributes and functions are available:
 
 these attributes and functions are available for all elements:
 
-	         padding:  distance text to border
-	       box_theme:  the theme of the element
-	            font:  font of the text in the element
+	         padding:  pixel distance text to border (int)
+	       box_theme:  the theme of the element (function)
+	            font:  font of the text in the element (love font)
     (attributes don't affect layouts)
 
-	     get_pos():  returns pixel position
-        get_size():  returns pixel size
-	 set_pos(x, y):  sets element position (& recalcs if percentage based) (float, float)
-	set_size(w, h):  sets element size (& recalcs if percentage based) (float, float)
-	        hide():  hides element (doesn't get drawn until show() is called)
-	        show():  shows element if it was hidden
-	     destroy():  removes element from lovelyUI draw stack (if you want to only hide temporarily, use hide())
+	      get_pos():  returns pixel position
+	     get_size():  returns pixel size
+	 get_orig_pos():  gets the originally specified position (e.g. percentage coords)
+	get_orig_size():  gets the originally specified size (e.g. percentage size)
+	  set_pos(x, y):  sets element position (& recalcs if percentage based) (float, float)
+	 set_size(w, h):  sets element size (& recalcs if percentage based) (float, float)
+	         hide():  hides element (doesn't get drawn until show() is called)
+	         show():  shows element if it was hidden
+		  destroy():  removes element from lovelyUI draw stack (if you want to only hide temporarily, use hide())
+		      top():  pushes element to the top of the drawing stack (drawing it last; on top of every other element)	
 
 A global active mechanism is available as well, for focusing a single element and calling an action easily globally:
 
@@ -162,11 +165,13 @@ the following functions are available globally without throwing an error, howeve
 
 ### themes
 
-For now there are 3 default themes:
+For now these few themes are available:
 
-	lovelyui.box_themes.def1
-	lovelyui.box_themes.def2
+	lovelyui.box_themes.double_border_dark
+	lovelyui.box_themes.double_border_light
 	lovelyui.box_themes.old_school
+	lovelyui.box_themes.simple_transparent_dark (default)
+	lovelyui.box_themes.simple_transparent_light
 
 These are not really special at all, but this was not the intended goal. For your own purposes just define a theme function that takes 4-6 parameters:
 
@@ -192,6 +197,7 @@ Here is a simple example (for some other examples look at the library functions)
 	    lg.setColor ({20, 20, 20})
     end
 
+Since you get the relevant coordinates, you can draw whatever you want.
 Assign your function to either the base option lovelyui.box_theme or to any element.box_theme and you're set!
 
 ---

@@ -220,7 +220,7 @@ function lui.no   () lui._act:no   () end
 -- some default box themes
 -- pure love2d drawings
 lui.box_themes = {
-    def1 = function (x, y, w, h, a)	
+    double_border_light = function (x, y, w, h, a)	
 	if a then lg.setColor ({230, 230, 230})
 	else lg.setColor ({180, 180, 180}) end
 	lg.rectangle ('fill', x-3, y-3, w+6, h+6, 5, 5, 5)
@@ -235,7 +235,7 @@ lui.box_themes = {
 	lg.setColor ({20, 20, 20})
     end,
 
-    def2 = function (x, y, w, h, a)
+    double_border_dark = function (x, y, w, h, a)
 	if a then lg.setColor ({15, 15, 15})
 	else lg.setColor ({30, 30, 30}) end
 	lg.rectangle ('fill', x-3, y-3, w+6, h+6, 5, 5, 5)
@@ -261,11 +261,39 @@ lui.box_themes = {
 
 	-- text color
 	lg.setColor ({0, 0, 0})
+    end,
+
+    simple_transparent_dark = function (x, y, w, h, a)
+
+	lg.setColor ({0, 0, 0, 150})
+	lg.rectangle ('fill', x, y, w, h, 5, 5, 20)
+
+	if a then
+	    lg.setColor ({230, 230, 230, 150})
+	    lg.rectangle ('line', x, y, w, h, 5, 5, 20)
+	end
+	
+	lg.setColor ({230, 230, 230})
+	
+    end,
+
+    simple_transparent_light = function (x, y, w, h, a)
+
+	lg.setColor ({250, 250, 250, 150})
+	lg.rectangle ('fill', x, y, w, h, 5, 5, 20)
+
+	if a then
+	    lg.setColor ({0, 0, 0, 150})
+	    lg.rectangle ('line', x, y, w, h, 5, 5, 20)
+	end
+	
+	lg.setColor ({20, 20, 20})
+
     end
 }
 
 -- default box_theme
-lui.box_theme = lui.box_themes.def2
+lui.box_theme = lui.box_themes.simple_transparent_dark
 
 -- this handles timed data structures
 function lui:update (dt)
@@ -432,15 +460,28 @@ new_box = function (x, y, w, h)
 
     -- cleanly removes from draw_stack
     function b:destroy ()
-	for k, v in ipairs (draw_stack) do
-	    if v._id == b._id then table.remove (draw_stack, k) end
+	for k, v in pairs (lui.draw_stack) do
+	    if v._id == b._id then table.remove (lui.draw_stack, k) end
+	end
+    end
+
+    -- pushes the element on top of the draw_stack
+    function b:top ()
+	for k, v in pairs (lui.draw_stack) do
+	    if v._id == b._id then
+		table.remove (lui.draw_stack, k)
+		table.insert (lui.draw_stack, v)
+	    end
 	end
     end
     
     -- get, set, hide, show and prep work for subobjects (so love / lua won't crash)
     function b:get_pos  () return b._x, b._y end
+    function b:get_orig_pos () return b._bx, b._by end
     function b:get_size () return b._w, b._h end
+    function b:get_orig_size () return b._bw, b._bh end
     function b:set_pos (sx, sy)
+	b._bx, b._by = sx, sy
 	if lui.perc_coords then
 	    if b._layout ~= nil then b._x, b._y = perc_to_abs (sx, sy, b._layout:get_size())
 	    else b._x, b._y = perc_to_abs (sx, sy)
@@ -449,6 +490,7 @@ new_box = function (x, y, w, h)
 	end
     end
     function b:set_size (sw, sh)
+	b._bw, b._bh = sw, sh
 	if lui.perc_coords then
 	    if b._layout ~= nil then b._w, b._h = perc_to_abs (sw, sh, b._layout:get_size())
 	    else b._w, b._h = perc_to_abs (sw, sh)
