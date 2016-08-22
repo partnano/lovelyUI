@@ -363,6 +363,7 @@ function lui:draw ()
 	    
 	    if e._layout ~= nil then
 		local l = e._layout
+		if e._layout._visible == false then goto continue end
 
 		x, y = x +l._x, y +l._y		
 	    end
@@ -421,6 +422,8 @@ function lui:draw ()
 	    end
 
 	end
+	
+	::continue::
     end
 
     -- restore state so dev doesn't get a random font

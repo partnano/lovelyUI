@@ -46,7 +46,6 @@ function love.load ()
     -- so now, let's actually add them!
     layout:add_element (y1)
     layout:add_element (t2)
-    
 end
 
 function love.keypressed (k)
