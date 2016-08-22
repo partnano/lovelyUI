@@ -30,7 +30,7 @@ for the code, see ***main.lua***
 
 ## how to configure
 
-Via the  
+Via the
     
     :set_defaults ({--array of options--})
 
@@ -154,8 +154,8 @@ these attributes and functions are available for all elements:
 
 A global active mechanism is available as well, for focusing a single element and calling an action easily globally:
 
-	lovelyui:set_active(e): sets specified element to active one (lovelyUI element)
-	lovelyui:get_active():  returns current active element (nil if there isn't one)
+	lovelyui:set_active(e):  sets specified element to active one (lovelyUI element)
+	 lovelyui:get_active():  returns current active element (nil if there isn't one)
 
 the following functions are available globally without throwing an error, however will only do something for the respective elements
 

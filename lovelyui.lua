@@ -82,7 +82,7 @@ function lui:new_textbox (lines, x, y, w, h, img)
     function t:reset_anim ()
 	-- remove from anim_stack, so no double effects happen
 	for k, v in ipairs (lui.anim_stack) do
-	    if t._id == v._id then table.remove (lui.anim_stack, k) end
+	    if t._id == v._id then table.remove (lui.anim_stack, k); break end
 	end
 
 	-- base values for text animation
@@ -198,6 +198,8 @@ function lui:new_layout (x, y, w, h)
 			    l._act = nil
 			end
 		    end
+
+		    break
 		end
 	    end
 	end
@@ -464,7 +466,7 @@ new_box = function (x, y, w, h)
     -- cleanly removes from draw_stack
     function b:destroy ()
 	for k, v in pairs (lui.draw_stack) do
-	    if v._id == b._id then table.remove (lui.draw_stack, k) end
+	    if v._id == b._id then table.remove (lui.draw_stack, k) break end
 	end
     end
 
